@@ -13,6 +13,7 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import support.test.AcceptanceTest;
+import support.test.HtmlFormDataBuilder;
 
 import java.util.Arrays;
 
@@ -32,16 +33,12 @@ public class LoginAcceptanceTest {
 
     @Test
     public void loginTest() throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
-
+        HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
         String userId = "sanjigi";
         String password = "test";
-        MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-        params.add("userId", userId);
-        params.add("password", password);
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(params, headers);
+        builder.addParams("userId", userId);
+        builder.addParams("password", password);
+        HttpEntity<MultiValueMap<String, Object>> request = builder.build();
 
         ResponseEntity<String> response = template.postForEntity("/users/login", request, String.class);
 
