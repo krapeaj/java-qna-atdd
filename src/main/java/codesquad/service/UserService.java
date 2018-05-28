@@ -48,12 +48,8 @@ public class UserService {
             logger.debug("NO user with user ID: {} found", userId);
             throw new UnAuthenticationException();
         }
-        User user = maybeUser.get();
-        if (!user.matchPassword(password)) {
-            logger.debug("Password mismatch");
-            throw new UnAuthenticationException();
-        }
-
-        return user;
+        return maybeUser
+                .filter(user -> user.matchPassword(password))
+                .orElseThrow(UnAuthenticationException::new);
     }
 }
