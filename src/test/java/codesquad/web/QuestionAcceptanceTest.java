@@ -26,7 +26,7 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
 
     @Test
     public void form_NOT_logged_in() throws Exception {
-        ResponseEntity<String> response = update(template());
+        ResponseEntity<String> response = getForm(template());
 
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
@@ -46,7 +46,7 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
-    private ResponseEntity<String> update(TestRestTemplate template) throws Exception {
+    private ResponseEntity<String> getForm(TestRestTemplate template) throws Exception {
         HttpHeaders headers = new HttpHeaders();
         headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
         headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);

@@ -18,15 +18,6 @@ public class QnaServiceTest {
     @InjectMocks
     private QnaService qnaService;
 
-    @Test
-    public void create_logged_in() {
-        Question question = new Question("test", "content");
-        when(questionRepository.save(question)).thenReturn(question);
 
-        User loginUser = new User("sanjigi", "password", "name", "javajigi@slipp.net");
-
-
-//        verify(qnaService).create();
-    }
 
 }
