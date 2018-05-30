@@ -5,6 +5,7 @@ import java.util.Optional;
 
 import javax.annotation.Resource;
 
+import codesquad.UnAuthenticationException;
 import codesquad.dto.QuestionDto;
 import codesquad.security.LoginUser;
 import org.slf4j.Logger;
@@ -40,13 +41,17 @@ public class QnaService {
         return questionRepository.save(question);
     }
 
-    public Optional<Question> findById(long id) {
-        return questionRepository.findById(id);
+    public Question findById(long id, Question updated) {
+        return questionRepository.findById(id)
+                .filter(question -> question.equals(updated))
+                .orElseThrow(UnAuthenticationException::new);
     }
 
-    public Question update(User loginUser, long id, Question updatedQuestion) {
-        // TODO 수정 기능 구현
-        return null;
+    public Question update(User loginUser, long id, QuestionDto updatedQuestionDto) {
+        Question updated = updatedQuestionDto.toQuestion();
+        Question original = findById(id, updated);
+        original.updateQuestion(updated, loginUser);
+        return questionRepository.save(original);
     }
 
     @Transactional
