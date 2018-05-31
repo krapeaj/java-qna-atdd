@@ -6,6 +6,7 @@ import java.util.Optional;
 import javax.annotation.Resource;
 
 import codesquad.UnAuthenticationException;
+import codesquad.domain.*;
 import codesquad.dto.QuestionDto;
 import codesquad.security.LoginUser;
 import org.slf4j.Logger;
@@ -15,11 +16,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import codesquad.CannotDeleteException;
-import codesquad.domain.Answer;
-import codesquad.domain.AnswerRepository;
-import codesquad.domain.Question;
-import codesquad.domain.QuestionRepository;
-import codesquad.domain.User;
 
 @Service("qnaService")
 public class QnaService {
@@ -56,7 +52,13 @@ public class QnaService {
 
     @Transactional
     public void deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
-        // TODO 삭제 기능 구현
+        Question question = questionRepository.findById(questionId)
+                .filter(q -> !q.isDeleted())
+                .orElseThrow(CannotDeleteException::new);
+        DeleteHistory deletedQuestion = question.deleteQuestion(loginUser);
+        List<DeleteHistory> deleted = question.deleteAnswers(loginUser);
+        deleted.add(deletedQuestion);
+        deleteHistoryService.saveAll(deleted);
     }
 
     public Iterable<Question> findAll() {

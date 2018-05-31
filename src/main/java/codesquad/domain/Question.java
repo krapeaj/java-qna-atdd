@@ -1,5 +1,6 @@
 package codesquad.domain;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -88,8 +89,27 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         if (!isOwner(loginUser)) {
             throw new UnAuthorizedException();
         }
-
         this.contents = updated.contents;
+    }
+
+    public DeleteHistory deleteQuestion(User loginUser) throws UnAuthorizedException {
+        if (!isOwner(loginUser)) {
+            throw new UnAuthorizedException();
+        }
+        deleted = true;
+        return new DeleteHistory(ContentType.QUESTION, super.getId(), loginUser, LocalDateTime.now());
+    }
+
+    public List<DeleteHistory> deleteAnswers(User loginUser) {
+        if (!isOwner(loginUser)) {
+            throw new UnAuthorizedException();
+        }
+        List<DeleteHistory> deletedAnswers = new ArrayList<>();
+        for (Answer answer : answers) {
+            DeleteHistory deletedAnswer = answer.deleteAnswer(writer);
+            deletedAnswers.add(deletedAnswer);
+        }
+        return deletedAnswers;
     }
 
     @Override
