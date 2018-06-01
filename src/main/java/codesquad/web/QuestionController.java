@@ -1,6 +1,5 @@
 package codesquad.web;
 
-import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
 import codesquad.dto.QuestionDto;
@@ -10,9 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 
@@ -35,8 +32,23 @@ public class QuestionController {
 
     @PutMapping("/submit")
     public String submit(@LoginUser User user, QuestionDto questionDto) {
-        qnaService.create(user, questionDto);
         logger.debug("Submitting question...");
+        qnaService.create(user, questionDto);
+        return "redirect:/";
+    }
+
+    @PostMapping("/{id}/update")
+    public String update(@LoginUser User user, @PathVariable long id, QuestionDto questionDto) {
+        logger.debug("Updating question...");
+        qnaService.update(user, id, questionDto);
+        logger.debug("Question updated!");
+        return "redirect:/questions/{id}";
+    }
+
+    @DeleteMapping("/{id}/delete")
+    public String delete(@LoginUser User user, @PathVariable long id) {
+        logger.debug("Deleting question...");
+        qnaService.deleteQuestion(user, id);
         return "redirect:/";
     }
 }
