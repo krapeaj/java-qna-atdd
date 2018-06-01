@@ -19,9 +19,6 @@ public class HomeController {
     }
 }
 
-//TODO: Reduce duplicate code
-//TODO: Add test for Question
-//TODO: Logout function
 //TODO: Edit profile function
 //TODO: View profile function
 //TODO: Add/Delete Answer + test -- for next step?
