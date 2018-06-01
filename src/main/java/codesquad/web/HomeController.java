@@ -18,7 +18,3 @@ public class HomeController {
         return "home";
     }
 }
-
-//TODO: Edit profile function
-//TODO: View profile function
-//TODO: Add/Delete Answer + test -- for next step?
