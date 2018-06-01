@@ -1,44 +1,47 @@
 package codesquad.web;
 
 import codesquad.domain.User;
-import org.junit.Before;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 import support.test.AcceptanceTest;
-
-import javax.xml.ws.Response;
-import java.util.Arrays;
+import support.test.HtmlFormDataBuilder;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 
 public class QuestionAcceptanceTest extends AcceptanceTest {
     private static final Logger logger = LoggerFactory.getLogger(QuestionAcceptanceTest.class);
+    private static final String FORM_URL = "/questions/form";
+    private static final String SUBMIT_URL = "/questions/submit";
+    private static final String VALID_SHOW_URL = "/questions/1";
+    private static final String INVALID_SHOW_URL = "/questions/10";
+    private static final String UPDATE_URL = "/questions/1/update";
+    private static final String DELETE_URL = "/questions/1/delete";
+    private static final String DEFAULT_CONTENT = "content";
+    private static final String DEFAULT_TITLE = "국내에서 Ruby on Rails와 Play가 활성화되기 힘든 이유는 뭘까?";
 
     @Test
     public void form_logged_in() throws Exception {
-        User loggedInUser = defaultUser();
-        ResponseEntity<String> response = basicAuthTemplate(loggedInUser)
-                .getForEntity("/questions/form", String.class);
+        User loginUser = defaultUser();
+        ResponseEntity<String> response = createResponse(basicAuthTemplate(loginUser), FORM_URL);
 
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
     @Test
     public void form_NOT_logged_in() throws Exception {
-        ResponseEntity<String> response = createGetResponse(template());
+        ResponseEntity<String> response = createResponse(template(), FORM_URL);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
     @Test
     public void create_logged_in() throws Exception {
-        ResponseEntity<String> response = createPostResponse(basicAuthTemplate());
+        ResponseEntity<String> response = createPutResponse(basicAuthTemplate(), SUBMIT_URL);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
         assertThat(response.getHeaders().getLocation().getPath(), is("/"));
@@ -46,7 +49,36 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
 
     @Test
     public void create_NOT_logged_in() throws Exception {
-        ResponseEntity<String> response = createPostResponse(template());
+        ResponseEntity<String> response = createPutResponse(template(), SUBMIT_URL);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
+    }
+
+    @Test
+    public void show_Question_Exists() throws Exception {
+        ResponseEntity<String> response = createResponse(template(), VALID_SHOW_URL);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    }
+
+    @Test
+    public void show_Question_Does_NOT_Exist() throws Exception {
+        ResponseEntity<String> response = createResponse(template(), INVALID_SHOW_URL);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.BAD_REQUEST));
+    }
+
+    @Test
+    public void updateForm_logged_in() throws Exception {
+        User loginUser = defaultUser();
+        ResponseEntity<String> response = createResponse(basicAuthTemplate(loginUser), UPDATE_URL);
+
+        assertThat(response.getStatusCode(), is(HttpStatus.OK));
+    }
+
+    @Test
+    public void updateForm_NOT_logged_in() throws Exception {
+        ResponseEntity<String> response = createResponse(template(), UPDATE_URL);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
@@ -54,7 +86,7 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
     @Test
     public void update_logged_in() throws Exception {
         User loginUser = defaultUser();
-        ResponseEntity<String> response = createUpdateResponse(basicAuthTemplate(loginUser));
+        ResponseEntity<String> response = createPutResponse(basicAuthTemplate(loginUser), UPDATE_URL);
 
         assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
         assertThat(response.getHeaders().getLocation().getPath(), is("/questions/1"));
@@ -62,54 +94,50 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
 
     @Test
     public void update_NOT_logged_in() throws Exception {
+        ResponseEntity<String> response = createPutResponse(template(), UPDATE_URL);
 
+        assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
     @Test
     public void delete_logged_in() throws Exception {
+        User loginUser = defaultUser();
+        ResponseEntity<String> response = createDeleteResponse(basicAuthTemplate(loginUser), DELETE_URL);
 
+        assertThat(response.getStatusCode(), is(HttpStatus.FOUND));
+        assertThat(response.getHeaders().getLocation().getPath(), is("/"));
     }
 
     @Test
     public void delete_NOT_logged_in() throws Exception {
+        ResponseEntity<String> response = createDeleteResponse(template(), DELETE_URL);
 
+        assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
-    private ResponseEntity<String> createGetResponse(TestRestTemplate template) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    private ResponseEntity<String> createResponse(TestRestTemplate template, String url) throws Exception {
+        HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
+        HttpEntity<MultiValueMap<String, Object>> request = builder.build();
 
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(headers);
-
-        return template.getForEntity("/questions/form", String.class, request);
+        return template.getForEntity(url, String.class, request);
     }
 
-    private ResponseEntity<String> createPostResponse(TestRestTemplate template) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    private ResponseEntity<String> createPutResponse(TestRestTemplate template, String url) throws Exception {
+        HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
+        builder.addParams("title", DEFAULT_TITLE);
+        builder.addParams("content", DEFAULT_CONTENT);
+        builder.addParams("_method", "PUT");
 
-        MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-        params.add("title", "test");
-        params.add("content", "content");
-        params.add("_method", "PUT");
+        HttpEntity<MultiValueMap<String, Object>> request = builder.build();
 
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(params, headers);
-
-        return template.postForEntity("/questions/submit", request, String.class);
+        return template.postForEntity(url, request, String.class);
     }
 
-    private ResponseEntity<String> createUpdateResponse(TestRestTemplate template) throws Exception {
-        HttpHeaders headers = new HttpHeaders();
-        headers.setAccept(Arrays.asList(MediaType.TEXT_HTML));
-        headers.setContentType(MediaType.APPLICATION_FORM_URLENCODED);
+    private ResponseEntity<String> createDeleteResponse(TestRestTemplate template, String url) throws Exception {
+        HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
+        builder.addParams("_method", "DELETE");
+        HttpEntity<MultiValueMap<String, Object>> request = builder.build();
 
-        MultiValueMap<String, Object> params = new LinkedMultiValueMap<>();
-        params.add("title", "test");
-        params.add("content", "update");
-
-        HttpEntity<MultiValueMap<String, Object>> request = new HttpEntity<MultiValueMap<String, Object>>(params, headers);
-        return template.postForEntity("/questions/1/update", request, String.class);
+        return template.postForEntity(url, request, String.class);
     }
 }

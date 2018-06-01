@@ -126,8 +126,8 @@ public class Question extends AbstractEntity implements UrlGeneratable {
     public boolean equals(Object o) {
         if (this == o) return true;
         if (!(o instanceof Question)) return false;
-        if (!super.equals(o)) return false;
         Question question = (Question) o;
+        System.out.println(title + "    " + question.title);
         return Objects.equals(title, question.title);
     }
 

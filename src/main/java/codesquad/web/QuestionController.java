@@ -1,5 +1,7 @@
 package codesquad.web;
 
+import codesquad.UnAuthenticationException;
+import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
 import codesquad.dto.QuestionDto;
@@ -9,9 +11,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.persistence.EntityNotFoundException;
 
 @Controller
 @RequestMapping("/questions")
@@ -30,18 +34,35 @@ public class QuestionController {
         return "/qna/form";
     }
 
-    @PutMapping("/submit")
-    public String submit(@LoginUser User user, QuestionDto questionDto) {
+    @PutMapping("/create")
+    public String create(@LoginUser User user, QuestionDto questionDto) {
         logger.debug("Submitting question...");
         qnaService.create(user, questionDto);
         return "redirect:/";
     }
 
-    @PostMapping("/{id}/update")
+    @GetMapping("/{id}")
+    public String show(@PathVariable long id, Model model) {
+        Question question = questionRepository.findById(id)
+                .orElseThrow(EntityNotFoundException::new);
+        model.addAttribute("question", question);
+        logger.debug("Directing to show...");
+        return "/qna/show";
+    }
+
+    @GetMapping("/{id}/update")
+    public String updateForm(@LoginUser User user, @PathVariable long id, Model model) {
+        logger.debug("Directing to update form...");
+        Question question = questionRepository.findById(id)
+                .orElseThrow(UnAuthenticationException::new);
+        model.addAttribute("question", question);
+        return "/qna/updateForm";
+    }
+
+    @PutMapping("/{id}/update")
     public String update(@LoginUser User user, @PathVariable long id, QuestionDto questionDto) {
         logger.debug("Updating question...");
         qnaService.update(user, id, questionDto);
-        logger.debug("Question updated!");
         return "redirect:/questions/{id}";
     }
 
