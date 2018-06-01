@@ -59,6 +59,7 @@ public class QnaService {
         DeleteHistory deletedQuestion = question.deleteQuestion(loginUser);
         List<DeleteHistory> deleted = question.deleteAnswers(loginUser);
         deleted.add(deletedQuestion);
+        questionRepository.save(question);
         deleteHistoryService.saveAll(deleted);
     }
 

@@ -14,7 +14,14 @@ public class HomeController {
 
     @GetMapping("/")
     public String home(Model model) {
-        model.addAttribute("questions", questionRepository.findAll());
+        model.addAttribute("questions", questionRepository.findByDeleted(false));
         return "home";
     }
 }
+
+//TODO: Reduce duplicate code
+//TODO: Add test for Question
+//TODO: Logout function
+//TODO: Edit profile function
+//TODO: View profile function
+//TODO: Add/Delete Answer + test -- for next step?

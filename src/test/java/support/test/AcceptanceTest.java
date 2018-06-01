@@ -1,6 +1,5 @@
 package support.test;
 
-import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +15,6 @@ import codesquad.domain.UserRepository;
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 public abstract class AcceptanceTest {
     private static final String DEFAULT_LOGIN_USER = "javajigi";
-    private static final long DEFAULT_QUESTION_ID = 1;
 
     @Autowired
     private TestRestTemplate template;
@@ -45,13 +43,5 @@ public abstract class AcceptanceTest {
     
     protected User findByUserId(String userId) {
         return userRepository.findByUserId(userId).get();
-    }
-
-    protected Question defaultQuestion() {
-        return findQuestionById(DEFAULT_QUESTION_ID);
-    }
-
-    protected Question findQuestionById(long id) {
-        return questionRepository.findById(id).get();
     }
 }
