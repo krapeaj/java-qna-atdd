@@ -28,10 +28,10 @@ public class UserServiceTest {
     @Test
     public void add() {
         UserDto userDto = new UserDto("krapeaj", "password", "name", "hi@hi.com");
-        when(userRepository.findByUserId(userDto.getUserId())).thenReturn(Optional.of(userDto.toUser()));
 
         userService.add(userDto);
-        verify(userRepository).save(new User("krapeaj", "password", "name", "hi@hi.com"));
+        verify(userRepository, times(1))
+                .save(new User("krapeaj", "password", "name", "hi@hi.com"));
     }
 
     @Test

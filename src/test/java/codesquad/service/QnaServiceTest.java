@@ -6,6 +6,7 @@ import codesquad.UnAuthorizedException;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -20,6 +21,13 @@ import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class QnaServiceTest {
+    private static final String ORIGINAL_CONTENT = "original";
+    private static final String UPDATED_CONTENT = "updated";
+    private static final String QUESTION_TITLE = "title";
+
+    private final Question original = new Question(QUESTION_TITLE, ORIGINAL_CONTENT);
+    private final Question updated = new Question(QUESTION_TITLE, UPDATED_CONTENT);
+    private final User writer = new User("writer", "password", "pobi", "javajigi@slipp.net");
 
     @Mock
     private QuestionRepository questionRepository;
@@ -30,119 +38,58 @@ public class QnaServiceTest {
     @InjectMocks
     private QnaService qnaService;
 
-    @Test
-    public void update_Success() throws Exception {
-        User loginUser = createTestUser("krapeaj");
-
-        Question original = createTestQuestion("test", "content");
-        Question updated = createTestQuestion("test", "content 2");
-        original.writeBy(loginUser);
-
-        when(questionRepository.findById(original.getId())).thenReturn(Optional.of(original));
-        when(questionRepository.save(original)).thenReturn(original);
-
-        qnaService.update(loginUser, original.getId(), updated.toQuestionDto());
-        assertThat(original.getContents(), is("content 2"));
+    @Before
+    public void setUp() {
+        original.writeBy(writer);
+        when(questionRepository.findById(anyLong())).thenReturn(Optional.of(original));
     }
 
-    @Test(expected = UnAuthorizedException.class)
-    public void update_Logged_In_But_NOT_Writer() {
-        User writer = createTestUser("writer");
-        User loggedInUser = new User("notWriter", "password", "name", "hi@slipp.net");
+    @Test
+    public void update_Success() {
+        when(questionRepository.save(original)).thenReturn(original);
 
-        Question original = createTestQuestion("test", "content");
-        Question updated = new Question("test", "content 2");
-        original.writeBy(writer);
-
-        when(questionRepository.findById(original.getId())).thenReturn(Optional.of(original));
-
-        qnaService.update(loggedInUser, original.getId(), updated.toQuestionDto());
-        assertThat(updated.getContents(), is("content"));
+        qnaService.update(writer, original.getId(), updated.toQuestionDto());
+        assertThat(original.getContents(), is(UPDATED_CONTENT));
     }
 
     @Test(expected = UnAuthenticationException.class)
     public void update_Question_Does_Not_Exist() {
-        User user = createTestUser("user");
-        Question original = createTestQuestion("test", "content");
-        Question updated = createTestQuestion("test", "content 2");
+        when(questionRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        when(questionRepository.findById(original.getId())).thenReturn(Optional.empty());
-
-        qnaService.update(user, original.getId(), updated.toQuestionDto());
-        assertThat(original.getContents(), is("content"));
+        qnaService.update(writer, original.getId(), updated.toQuestionDto());
+        assertThat(original.getContents(), is(ORIGINAL_CONTENT));
     }
 
     @Test(expected = UnAuthenticationException.class)
     public void update_Different_Questions() {
-        User writer = createTestUser("writer");
-
-        Question original = createTestQuestion("test", "content");
-        Question updated = createTestQuestion("test 2", "different question");
-        original.writeBy(writer);
-
-        when(questionRepository.findById(original.getId())).thenReturn(Optional.of(original));
+        Question differentQuestion = new Question();
+        when(questionRepository.findById(anyLong())).thenReturn(Optional.of(differentQuestion));
 
         qnaService.update(writer, original.getId(), updated.toQuestionDto());
-        assertThat(original.getContents(), is("different question"));
-    }
-
-    private User createTestUser(String userId) {
-        return new User(userId, "password", "name", "test@slipp.net");
-    }
-
-    private Question createTestQuestion(String title, String content) {
-        return new Question(title, content);
+        assertThat(original.getContents(), is(ORIGINAL_CONTENT));
+        assertThat(differentQuestion.getContents(), is(ORIGINAL_CONTENT));
     }
 
     @Test
-    public void delete_Success() throws Exception {
-        User loginUser = createTestUser("krapeaj");
-
-        Question question = createTestQuestion("test", "content");
-        question.writeBy(loginUser);
-
-        when(questionRepository.findById(question.getId())).thenReturn(Optional.of(question));
-
-        qnaService.deleteQuestion(loginUser, question.getId());
-
+    public void delete_Success() {
+        qnaService.deleteQuestion(writer, original.getId());
         verify(deleteHistoryService,times(1)).saveAll(anyList());
-        assertThat(question.isDeleted(), is(true));
-    }
-
-    @Test(expected = UnAuthorizedException.class)
-    public void delete_Logged_In_But_NOT_Writer() {
-        User writer = createTestUser("writer");
-        User loginUser = createTestUser("loginUser");
-        Question question = createTestQuestion("test", "content");
-        question.writeBy(writer);
-
-        when(questionRepository.findById(question.getId())).thenReturn(Optional.of(question));
-
-        qnaService.deleteQuestion(loginUser, question.getId());
-        assertThat(question.isDeleted(), is(false));
+        assertThat(original.isDeleted(), is(true));
     }
 
     @Test(expected = CannotDeleteException.class)
     public void delete_Question_Does_Not_Exist() {
-        User user = createTestUser("loginUser");
-        Question question = createTestQuestion("test", "content");
+        when(questionRepository.findById(anyLong())).thenReturn(Optional.empty());
 
-        when(questionRepository.findById(question.getId())).thenReturn(Optional.empty());
-
-        qnaService.deleteQuestion(user, question.getId());
-        assertThat(question.isDeleted(), is(false));
+        qnaService.deleteQuestion(writer, original.getId());
+        assertThat(original.isDeleted(), is(false));
     }
 
     @Test(expected = CannotDeleteException.class)
     public void delete_Already_Deleted() {
-        User user = createTestUser("loginUser");
-        Question question = createTestQuestion("test", "content");
-        question.writeBy(user);
-        question.deleteQuestion(user);
+        original.deleteQuestion(writer);
 
-        when(questionRepository.findById(question.getId())).thenReturn(Optional.of(question));
-
-        qnaService.deleteQuestion(user, question.getId());
+        qnaService.deleteQuestion(writer, original.getId());
         verify(deleteHistoryService, times(0)).saveAll(anyList());
     }
 }

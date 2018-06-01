@@ -12,10 +12,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import javax.annotation.Resource;
 
 @Controller
+@RequestMapping("/questions")
 public class QuestionController {
     private static final Logger logger = LoggerFactory.getLogger(QuestionController.class);
 
@@ -25,15 +27,16 @@ public class QuestionController {
     @Resource
     private QnaService qnaService;
 
-    @GetMapping("/questionForm")
+    @GetMapping("/form")
     public String questionForm(@LoginUser User user) {
-
+        logger.debug("Showing question form...");
         return "/qna/form";
     }
 
     @PutMapping("/submit")
     public String submit(@LoginUser User user, QuestionDto questionDto) {
         qnaService.create(user, questionDto);
+        logger.debug("Submitting question...");
         return "redirect:/";
     }
 }

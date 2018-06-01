@@ -50,11 +50,12 @@ public class QnaService {
         return questionRepository.save(original);
     }
 
-    @Transactional
+    @Transactional //TODO: questionId used in get request, is this a problem?
     public void deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
         Question question = questionRepository.findById(questionId)
                 .filter(q -> !q.isDeleted())
                 .orElseThrow(CannotDeleteException::new);
+
         DeleteHistory deletedQuestion = question.deleteQuestion(loginUser);
         List<DeleteHistory> deleted = question.deleteAnswers(loginUser);
         deleted.add(deletedQuestion);
