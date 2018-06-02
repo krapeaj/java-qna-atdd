@@ -43,11 +43,11 @@ public class QnaService {
                 .orElseThrow(UnAuthenticationException::new);
     }
 
-    public Question update(User loginUser, long id, QuestionDto updatedQuestionDto) {
+    @Transactional
+    public void update(User loginUser, long id, QuestionDto updatedQuestionDto) {
         Question updated = updatedQuestionDto.toQuestion();
         Question original = findById(id, updated);
         original.updateQuestion(updated, loginUser);
-        return questionRepository.save(original);
     }
 
     @Transactional //TODO: questionId used in get request, is this a problem?
@@ -59,7 +59,6 @@ public class QnaService {
         DeleteHistory deletedQuestion = question.deleteQuestion(loginUser);
         List<DeleteHistory> deleted = question.deleteAnswers(loginUser);
         deleted.add(deletedQuestion);
-        questionRepository.save(question);
         deleteHistoryService.saveAll(deleted);
     }
 

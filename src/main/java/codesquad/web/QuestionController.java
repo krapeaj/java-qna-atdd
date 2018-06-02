@@ -59,14 +59,14 @@ public class QuestionController {
         return "/qna/updateForm";
     }
 
-    @PutMapping("/{id}/update")
+    @PutMapping("/{id}")
     public String update(@LoginUser User user, @PathVariable long id, QuestionDto questionDto) {
         logger.debug("Updating question...");
         qnaService.update(user, id, questionDto);
         return "redirect:/questions/{id}";
     }
 
-    @DeleteMapping("/{id}/delete")
+    @DeleteMapping("/{id}")
     public String delete(@LoginUser User user, @PathVariable long id) {
         logger.debug("Deleting question...");
         qnaService.deleteQuestion(user, id);
