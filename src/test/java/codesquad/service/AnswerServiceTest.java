@@ -44,7 +44,7 @@ public class AnswerServiceTest {
     }
 
     @Test
-    public void addAnswer_quesetion_exists() {
+    public void addAnswer_question_exists() {
         User writer = new User("testUser", "password", "name", "email");
         Question question = new Question("test", "content");
         AnswerDto answerDto = new AnswerDto("answer content");
@@ -54,7 +54,7 @@ public class AnswerServiceTest {
     }
 
     @Test(expected = NoSuchEntityException.class)
-    public void addAnswer_quesetion_does_NOT_exist() {
+    public void addAnswer_question_does_NOT_exist() {
         User writer = new User("testUser", "password", "name", "email");
         AnswerDto answerDto = new AnswerDto("answer content");
         when(questionRepository.findById(3L)).thenReturn(Optional.empty());

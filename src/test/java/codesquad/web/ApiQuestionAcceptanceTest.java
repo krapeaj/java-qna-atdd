@@ -19,10 +19,11 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
     @Test
     public void create_logged_in() {
         QuestionDto questionDto = new QuestionDto("title", "content");
-        ResponseEntity<String> response = basicAuthTemplate().postForEntity(CREATE_URL, questionDto, String.class);
+        ResponseEntity<QuestionDto> response = basicAuthTemplate().postForEntity(CREATE_URL, questionDto, QuestionDto.class);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
 
-        logger.debug("Question JSON Data: {}", response.getBody());
+        assertThat(response.getBody().getTitle(), is(questionDto.getTitle()));
+        assertThat(response.getBody().getContents(), is(questionDto.getContents()));
     }
 
     @Test
