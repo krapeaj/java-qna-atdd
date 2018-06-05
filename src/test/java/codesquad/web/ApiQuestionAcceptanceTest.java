@@ -1,7 +1,6 @@
 package codesquad.web;
 
 import codesquad.dto.QuestionDto;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,8 +22,7 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
         ResponseEntity<String> response = basicAuthTemplate().postForEntity(CREATE_URL, questionDto, String.class);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
 
-        String json = convertQuestionToJson(questionDto);
-        assertThat(response.getBody(), is(json));
+        logger.debug("Question JSON Data: {}", response.getBody());
     }
 
     @Test
@@ -39,8 +37,7 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
         ResponseEntity<String> response = template().getForEntity(DEFAULT_QUESTION_1_URL, String.class);
         assertThat(response.getStatusCode(), is(HttpStatus.ACCEPTED));
 
-        String json = convertQuestionToJson(getDefaultQuestion().toQuestionDto());
-        assertThat(response.getBody(), is(json));
+        logger.debug("Question JSON Data: {}", response.getBody());
     }
 
     @Test
@@ -60,7 +57,7 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
     @Test
     public void update_NOT_logged_in() {
         QuestionDto questionDto = new QuestionDto("title", "content");
-        ResponseEntity<String> response = template().postForEntity(CREATE_URL, questionDto, String.class);
+        ResponseEntity<String> response = basicAuthTemplate().postForEntity(CREATE_URL, questionDto, String.class);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
 
         String uri = response.getHeaders().getLocation().getPath();
@@ -69,15 +66,5 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
 
         QuestionDto original = template().getForObject(uri, QuestionDto.class);
         assertNotEquals(original.getContents(), update.getContents());
-    }
-
-    private String convertQuestionToJson(QuestionDto questionDto) {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            return mapper.writeValueAsString(questionDto);
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
     }
 }

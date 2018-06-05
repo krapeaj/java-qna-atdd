@@ -33,7 +33,7 @@ public class QnaService {
         Question question = questionDto.toQuestion();
         question.writeBy(loginUser);
         log.debug("question : {}", question);
-        return question;
+        return questionRepository.save(question);
     }
 
     @Transactional
@@ -84,7 +84,7 @@ public class QnaService {
         newAnswer.writeBy(loginUser);
         Question question = findQuestionById(questionId);
         question.addAnswer(newAnswer);
-        return newAnswer;
+        return answerRepository.save(answerDto.toAnswer());
     }
 
     public Answer deleteAnswer(User loginUser, long id) {

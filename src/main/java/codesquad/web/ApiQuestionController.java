@@ -26,9 +26,10 @@ public class ApiQuestionController {
     public ResponseEntity<QuestionDto> create(@LoginUser User loginUser, @Valid @RequestBody QuestionDto questionDto) {
         Question question = qnaService.create(loginUser, questionDto);
         HttpHeaders headers = new HttpHeaders();
+        logger.debug("Created Question ID: {}", question.getId());
         headers.setLocation(URI.create("/api/questions/" + question.getId()));
 
-        return new ResponseEntity<>(questionDto, headers, HttpStatus.CREATED);
+        return new ResponseEntity<>(question.toQuestionDto(), headers, HttpStatus.CREATED);
     }
 
     @GetMapping("")
@@ -39,14 +40,12 @@ public class ApiQuestionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<QuestionDto> show(@PathVariable long id) {
-        QuestionDto question = qnaService.findQuestionById(id).toQuestionDto();
-        return new ResponseEntity<>(question, HttpStatus.ACCEPTED);
+        QuestionDto questionDto = qnaService.findQuestionById(id).toQuestionDto();
+        return new ResponseEntity<>(questionDto, HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/{id}")
     public void update(@LoginUser User loginUser, @PathVariable long id, @Valid @RequestBody QuestionDto updated) {
-        logger.debug("Updating question............@@@@@@@@@@@@");
-        logger.debug("Update Content: {}", updated.getContents());
         qnaService.update(loginUser, id, updated);
 
         //TODO: RequestBody를 사용해서 HttpEntity를 사용해서 꼼수로 put (실제로 post)요청을 보내는 거랑 단순히 put요청을 보내는 거랑 왜 후자는 @RequestBody가 필요하고 전자는 아닌가??
