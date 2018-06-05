@@ -43,6 +43,12 @@ public class QnaService {
                 .orElseThrow(UnAuthenticationException::new);
     }
 
+    public Question findById(long id) {
+        return questionRepository.findById(id)
+                .filter(question -> !question.isDeleted())
+                .orElseThrow(UnAuthenticationException::new);
+    }
+
     @Transactional
     public void update(User loginUser, long id, QuestionDto updatedQuestionDto) {
         Question updated = updatedQuestionDto.toQuestion();
@@ -50,7 +56,7 @@ public class QnaService {
         original.updateQuestion(updated, loginUser);
     }
 
-    @Transactional //TODO: questionId used in get request, is this a problem?
+    @Transactional
     public void deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
         Question question = questionRepository.findById(questionId)
                 .filter(q -> !q.isDeleted())
