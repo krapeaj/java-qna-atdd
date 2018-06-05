@@ -1,8 +1,7 @@
 package codesquad.service;
 
-import codesquad.CannotDeleteException;
+import codesquad.NoSuchEntityException;
 import codesquad.UnAuthenticationException;
-import codesquad.UnAuthorizedException;
 import codesquad.domain.Question;
 import codesquad.domain.QuestionRepository;
 import codesquad.domain.User;
@@ -46,8 +45,6 @@ public class QnaServiceTest {
 
     @Test
     public void update_Success() {
-        when(questionRepository.save(original)).thenReturn(original);
-
         qnaService.update(writer, original.getId(), updated.toQuestionDto());
         assertThat(original.getContents(), is(UPDATED_CONTENT));
     }
@@ -77,7 +74,7 @@ public class QnaServiceTest {
         assertThat(original.isDeleted(), is(true));
     }
 
-    @Test(expected = CannotDeleteException.class)
+    @Test(expected = NoSuchEntityException.class)
     public void delete_Question_Does_Not_Exist() {
         when(questionRepository.findById(anyLong())).thenReturn(Optional.empty());
 
@@ -85,7 +82,7 @@ public class QnaServiceTest {
         assertThat(original.isDeleted(), is(false));
     }
 
-    @Test(expected = CannotDeleteException.class)
+    @Test(expected = NoSuchEntityException.class)
     public void delete_Already_Deleted() {
         original.deleteQuestion(writer);
 

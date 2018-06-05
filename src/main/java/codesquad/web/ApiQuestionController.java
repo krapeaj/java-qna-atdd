@@ -8,8 +8,6 @@ import codesquad.service.QnaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.*;
-import org.springframework.util.LinkedMultiValueMap;
-import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
@@ -26,10 +24,11 @@ public class ApiQuestionController {
 
     @PostMapping("create")
     public ResponseEntity<QuestionDto> create(@LoginUser User loginUser, @Valid @RequestBody QuestionDto questionDto) {
-        qnaService.create(loginUser, questionDto);
-        logger.debug("Question created...");
+        Question question = qnaService.create(loginUser, questionDto);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setLocation(URI.create("/api/questions/" + question.getId()));
 
-        return new ResponseEntity<>(questionDto, HttpStatus.CREATED);
+        return new ResponseEntity<>(questionDto, headers, HttpStatus.CREATED);
     }
 
     @GetMapping("")
@@ -40,7 +39,7 @@ public class ApiQuestionController {
 
     @GetMapping("/{id}")
     public ResponseEntity<QuestionDto> show(@PathVariable long id) {
-        QuestionDto question = qnaService.findById(id).toQuestionDto();
+        QuestionDto question = qnaService.findQuestionById(id).toQuestionDto();
         return new ResponseEntity<>(question, HttpStatus.ACCEPTED);
     }
 

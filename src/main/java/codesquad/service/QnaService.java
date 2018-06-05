@@ -1,21 +1,19 @@
 package codesquad.service;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Resource;
 
+import codesquad.NoSuchEntityException;
 import codesquad.UnAuthenticationException;
 import codesquad.domain.*;
+import codesquad.dto.AnswerDto;
 import codesquad.dto.QuestionDto;
-import codesquad.security.LoginUser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import codesquad.CannotDeleteException;
 
 @Service("qnaService")
 public class QnaService {
@@ -30,42 +28,40 @@ public class QnaService {
     @Resource(name = "deleteHistoryService")
     private DeleteHistoryService deleteHistoryService;
 
+    @Transactional
     public Question create(User loginUser, QuestionDto questionDto) {
         Question question = questionDto.toQuestion();
         question.writeBy(loginUser);
         log.debug("question : {}", question);
-        return questionRepository.save(question);
-    }
-
-    public Question findById(long id, Question updated) {
-        return questionRepository.findById(id)
-                .filter(question -> question.equals(updated))
-                .orElseThrow(UnAuthenticationException::new);
-    }
-
-    public Question findById(long id) {
-        return questionRepository.findById(id)
-                .filter(question -> !question.isDeleted())
-                .orElseThrow(UnAuthenticationException::new);
+        return question;
     }
 
     @Transactional
     public void update(User loginUser, long id, QuestionDto updatedQuestionDto) {
         Question updated = updatedQuestionDto.toQuestion();
-        Question original = findById(id, updated);
+        Question original = findQuestionById(id, updated);
         original.updateQuestion(updated, loginUser);
     }
 
     @Transactional
-    public void deleteQuestion(User loginUser, long questionId) throws CannotDeleteException {
-        Question question = questionRepository.findById(questionId)
-                .filter(q -> !q.isDeleted())
-                .orElseThrow(CannotDeleteException::new);
-
+    public void deleteQuestion(User loginUser, long questionId) {
+        Question question = findQuestionById(questionId);
         DeleteHistory deletedQuestion = question.deleteQuestion(loginUser);
         List<DeleteHistory> deleted = question.deleteAnswers(loginUser);
         deleted.add(deletedQuestion);
         deleteHistoryService.saveAll(deleted);
+    }
+
+    public Question findQuestionById(long id, Question updated) {
+        return questionRepository.findById(id)
+                .filter(question -> question.equals(updated))
+                .orElseThrow(UnAuthenticationException::new);
+    }
+
+    public Question findQuestionById(long id) {
+        return questionRepository.findById(id)
+                .filter(question -> !question.isDeleted())
+                .orElseThrow(NoSuchEntityException::new);
     }
 
     public Iterable<Question> findAll() {
@@ -76,8 +72,19 @@ public class QnaService {
         return questionRepository.findAll(pageable).getContent();
     }
 
-    public Answer addAnswer(User loginUser, long questionId, String contents) {
-        return null;
+    public Answer findAnswerById(long id) {
+        return answerRepository.findById(id)
+                .filter(answer -> !answer.isDeleted())
+                .orElseThrow(NoSuchEntityException::new);
+    }
+
+    @Transactional
+    public Answer addAnswer(User loginUser, long questionId, AnswerDto answerDto) {
+        Answer newAnswer = answerDto.toAnswer();
+        newAnswer.writeBy(loginUser);
+        Question question = findQuestionById(questionId);
+        question.addAnswer(newAnswer);
+        return newAnswer;
     }
 
     public Answer deleteAnswer(User loginUser, long id) {
