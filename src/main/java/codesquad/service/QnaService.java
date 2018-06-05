@@ -1,5 +1,6 @@
 package codesquad.service;
 
+import java.util.Collections;
 import java.util.List;
 
 import javax.annotation.Resource;
@@ -84,11 +85,13 @@ public class QnaService {
         newAnswer.writeBy(loginUser);
         Question question = findQuestionById(questionId);
         question.addAnswer(newAnswer);
-        return answerRepository.save(answerDto.toAnswer());
+        return answerRepository.save(newAnswer);
     }
 
-    public Answer deleteAnswer(User loginUser, long id) {
-        // TODO 답변 삭제 기능 구현 
-        return null;
+    @Transactional
+    public void deleteAnswer(User loginUser, long id) {
+        Answer answer = findAnswerById(id);
+        DeleteHistory deleteHistory = answer.deleteAnswerByOwner(loginUser);
+        deleteHistoryService.saveAll(Collections.singletonList(deleteHistory));
     }
 }

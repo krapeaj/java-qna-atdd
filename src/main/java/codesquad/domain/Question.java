@@ -106,7 +106,7 @@ public class Question extends AbstractEntity implements UrlGeneratable {
         }
         List<DeleteHistory> deletedAnswers = new ArrayList<>();
         for (Answer answer : answers) {
-            DeleteHistory deletedAnswer = answer.deleteAnswer(writer);
+            DeleteHistory deletedAnswer = answer.deleteAnswerByDeletedQuestion(writer);
             deletedAnswers.add(deletedAnswer);
         }
         return deletedAnswers;

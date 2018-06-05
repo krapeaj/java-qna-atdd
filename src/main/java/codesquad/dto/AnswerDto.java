@@ -5,7 +5,7 @@ import codesquad.domain.Answer;
 import javax.validation.constraints.Size;
 
 public class AnswerDto {
-//    private long id;
+    private long id;
 
     @Size(min = 3)
     private String content;
@@ -16,18 +16,18 @@ public class AnswerDto {
         this.content = content;
     }
 
-//    public AnswerDto(long id, String content) {
-//        this.id = id;
-//        this.content = content;
-//    }
-//
-//    public long getId() {
-//        return id;
-//    }
-//
-//    public void setId(long id) {
-//        this.id = id;
-//    }
+    public AnswerDto(long id, String content) {
+        this.id = id;
+        this.content = content;
+    }
+
+    public long getId() {
+        return id;
+    }
+
+    public void setId(long id) {
+        this.id = id;
+    }
 
     public String getContent() {
         return content;

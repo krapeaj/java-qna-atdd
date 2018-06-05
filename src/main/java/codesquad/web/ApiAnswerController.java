@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
+import javax.validation.Valid;
 import java.net.URI;
 
 @RestController
@@ -21,15 +22,21 @@ public class ApiAnswerController {
     private QnaService qnaService;
 
     @PostMapping("")
-    public ResponseEntity<Answer> add(@LoginUser User loginUser, @PathVariable long questionId, AnswerDto answerDto) {
+    public ResponseEntity<AnswerDto> add(@LoginUser User loginUser, @PathVariable long questionId, @Valid @RequestBody AnswerDto answerDto) {
         Answer answer = qnaService.addAnswer(loginUser, questionId, answerDto);
         HttpHeaders headers = new HttpHeaders();
-        headers.setLocation(URI.create("/api/questions" + questionId + "/answers/" + answer.getId()));
-        return new ResponseEntity<>(answer, headers, HttpStatus.CREATED);
+        headers.setLocation(URI.create("/api/questions/" + questionId + "/answers/" + answer.getId()));
+        return new ResponseEntity<>(answer.toAnswerDto(), headers, HttpStatus.CREATED);
     }
 
-    @DeleteMapping("{id}")
-    public void delete(@LoginUser User loginUser, @PathVariable long id) {
+    @GetMapping("/{id}")
+    public ResponseEntity<AnswerDto> getAnswer(@PathVariable long id) {
+        Answer answer = qnaService.findAnswerById(id);
+        return new ResponseEntity<>(answer.toAnswerDto(), HttpStatus.OK);
+    }
 
+    @DeleteMapping("/{id}")
+    public void delete(@LoginUser User loginUser, @PathVariable long id) {
+        qnaService.deleteAnswer(loginUser, id);
     }
 }
