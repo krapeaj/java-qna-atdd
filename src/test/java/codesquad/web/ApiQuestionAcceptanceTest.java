@@ -29,43 +29,39 @@ public class ApiQuestionAcceptanceTest extends AcceptanceTest {
     @Test
     public void create_NOT_logged_in() {
         QuestionDto questionDto = new QuestionDto("title", "content");
-        ResponseEntity<String> response = template().postForEntity(CREATE_URL, questionDto, String.class);
+        ResponseEntity<QuestionDto> response = template().postForEntity(CREATE_URL, questionDto, QuestionDto.class);
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
     @Test
     public void show() {
-        ResponseEntity<String> response = template().getForEntity(DEFAULT_QUESTION_1_URL, String.class);
+        ResponseEntity<QuestionDto> response = template().getForEntity(DEFAULT_QUESTION_1_URL, QuestionDto.class);
         assertThat(response.getStatusCode(), is(HttpStatus.ACCEPTED));
 
-        logger.debug("Question JSON Data: {}", response.getBody());
+        logger.debug("Question Object: {}", response.getBody().getContents());
     }
 
     @Test
     public void update_logged_in() {
         QuestionDto questionDto = new QuestionDto("title", "content");
-        ResponseEntity<String> response = basicAuthTemplate().postForEntity(CREATE_URL, questionDto, String.class);
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        String location = createResource(CREATE_URL, questionDto, QuestionDto.class);
 
-        String uri = response.getHeaders().getLocation().getPath();
         QuestionDto update = new QuestionDto("title", "updated content");
-        basicAuthTemplate().put(uri, update);
+        basicAuthTemplate().put(location, update);
 
-        QuestionDto original = template().getForObject(uri, QuestionDto.class);
+        QuestionDto original = getResource(location, QuestionDto.class);
         assertThat(original.getContents(), is(update.getContents()));
     }
 
     @Test
     public void update_NOT_logged_in() {
         QuestionDto questionDto = new QuestionDto("title", "content");
-        ResponseEntity<String> response = basicAuthTemplate().postForEntity(CREATE_URL, questionDto, String.class);
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        String location = createResource(CREATE_URL, questionDto, QuestionDto.class);
 
-        String uri = response.getHeaders().getLocation().getPath();
         QuestionDto update = new QuestionDto("title", "updated content");
-        template().put(uri, update);
+        template().put(location, update);
 
-        QuestionDto original = template().getForObject(uri, QuestionDto.class);
+        QuestionDto original = getResource(location, QuestionDto.class);
         assertNotEquals(original.getContents(), update.getContents());
     }
 }

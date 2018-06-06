@@ -1,9 +1,7 @@
 package codesquad.web;
 
-import codesquad.domain.Answer;
 import codesquad.dto.AnswerDto;
 import org.junit.Test;
-import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import support.test.AcceptanceTest;
@@ -12,19 +10,19 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.*;
 
 public class ApiAnswerAcceptanceTest extends AcceptanceTest {
+    private static final String CREATE_URL = "/api/questions/1/answers";
+    private static final AnswerDto NEW_ANSWER = new AnswerDto("content");
 
     @Test
     public void add_logged_in() {
-        AnswerDto answerDto = new AnswerDto("content");
-        ResponseEntity<AnswerDto> response = basicAuthTemplate().postForEntity("/api/questions/1/answers", answerDto, AnswerDto.class);
+        ResponseEntity<AnswerDto> response = basicAuthTemplate().postForEntity(CREATE_URL, NEW_ANSWER, AnswerDto.class);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
         assertThat(response.getBody().getContent(), is("content"));
     }
 
     @Test
     public void add_NOT_logged_in() {
-        AnswerDto answerDto = new AnswerDto("content");
-        ResponseEntity<AnswerDto> response = template().postForEntity("/api/questions/1/answers", answerDto, AnswerDto.class);
+        ResponseEntity<AnswerDto> response = template().postForEntity(CREATE_URL, NEW_ANSWER, AnswerDto.class);
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
@@ -36,24 +34,18 @@ public class ApiAnswerAcceptanceTest extends AcceptanceTest {
 
     @Test
     public void delete_logged_in() {
-        AnswerDto answerDto = new AnswerDto("content");
-        ResponseEntity<AnswerDto> response = basicAuthTemplate().postForEntity("/api/questions/1/answers", answerDto, AnswerDto.class);
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        String location = createResource(CREATE_URL, NEW_ANSWER, AnswerDto.class);
 
-        String location = response.getHeaders().getLocation().getPath();
         basicAuthTemplate().delete(location);
 
         ResponseEntity<AnswerDto> res = template().getForEntity(location, AnswerDto.class);
         assertThat(res.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
 
-    @Test //TODO: call add()/getAnswer() to remove duplicate code?
+    @Test
     public void delete_NOT_logged_in() {
-        AnswerDto answerDto = new AnswerDto("content");
-        ResponseEntity<AnswerDto> response = basicAuthTemplate().postForEntity("/api/questions/1/answers", answerDto, AnswerDto.class);
-        assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
+        String location = createResource(CREATE_URL, NEW_ANSWER, AnswerDto.class);
 
-        String location = response.getHeaders().getLocation().getPath();
         template().delete(location);
 
         ResponseEntity<AnswerDto> res = template().getForEntity(location, AnswerDto.class);
