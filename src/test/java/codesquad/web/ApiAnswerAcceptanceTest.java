@@ -1,5 +1,6 @@
 package codesquad.web;
 
+import codesquad.domain.Answer;
 import codesquad.dto.AnswerDto;
 import org.junit.Test;
 import org.springframework.http.HttpStatus;
@@ -15,20 +16,20 @@ public class ApiAnswerAcceptanceTest extends AcceptanceTest {
 
     @Test
     public void add_logged_in() {
-        ResponseEntity<AnswerDto> response = basicAuthTemplate().postForEntity(CREATE_URL, NEW_ANSWER, AnswerDto.class);
+        ResponseEntity<Answer> response = basicAuthTemplate().postForEntity(CREATE_URL, NEW_ANSWER, Answer.class);
         assertThat(response.getStatusCode(), is(HttpStatus.CREATED));
-        assertThat(response.getBody().getContent(), is("content"));
+        assertThat(response.getBody().getContents(), is("content"));
     }
 
     @Test
     public void add_NOT_logged_in() {
-        ResponseEntity<AnswerDto> response = template().postForEntity(CREATE_URL, NEW_ANSWER, AnswerDto.class);
+        ResponseEntity<Answer> response = template().postForEntity(CREATE_URL, NEW_ANSWER, Answer.class);
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
     @Test
     public void getAnswer() {
-        ResponseEntity<AnswerDto> response = template().getForEntity("/api/questions/1/answers/1", AnswerDto.class);
+        ResponseEntity<Answer> response = template().getForEntity("/api/questions/1/answers/1", Answer.class);
         assertThat(response.getStatusCode(), is(HttpStatus.OK));
     }
 
@@ -38,7 +39,7 @@ public class ApiAnswerAcceptanceTest extends AcceptanceTest {
 
         basicAuthTemplate().delete(location);
 
-        ResponseEntity<AnswerDto> res = template().getForEntity(location, AnswerDto.class);
+        ResponseEntity<Answer> res = template().getForEntity(location, Answer.class);
         assertThat(res.getStatusCode(), is(HttpStatus.NOT_FOUND));
     }
 
@@ -48,7 +49,7 @@ public class ApiAnswerAcceptanceTest extends AcceptanceTest {
 
         template().delete(location);
 
-        ResponseEntity<AnswerDto> res = template().getForEntity(location, AnswerDto.class);
+        ResponseEntity<Answer> res = template().getForEntity(location, Answer.class);
         assertThat(res.getStatusCode(), is(HttpStatus.OK)); //OK를 받아야 한다는 게 조금 이상하지만.. delete가 안돼서 아직 있으니 get요청을 보냈을 때 OK를 받음.
     }
 }

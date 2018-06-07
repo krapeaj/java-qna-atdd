@@ -1,6 +1,7 @@
 package codesquad.dto;
 
 import codesquad.domain.Answer;
+import codesquad.domain.User;
 
 import javax.validation.constraints.Size;
 

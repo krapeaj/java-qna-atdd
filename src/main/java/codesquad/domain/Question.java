@@ -17,6 +17,7 @@ import javax.persistence.OrderBy;
 import javax.validation.constraints.Size;
 
 import codesquad.UnAuthorizedException;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import org.hibernate.annotations.Where;
 
 import codesquad.dto.QuestionDto;
@@ -38,6 +39,7 @@ public class Question extends AbstractEntity implements UrlGeneratable {
     private User writer;
 
     @OneToMany(mappedBy = "question", cascade = CascadeType.ALL)
+    @JsonIgnore
     @Where(clause = "deleted = false")
     @OrderBy("id ASC")
     private List<Answer> answers = new ArrayList<>();
@@ -62,6 +64,10 @@ public class Question extends AbstractEntity implements UrlGeneratable {
 
     public User getWriter() {
         return writer;
+    }
+
+    public List<Answer> getAnswers() {
+        return answers;
     }
 
     public void writeBy(User loginUser) {
