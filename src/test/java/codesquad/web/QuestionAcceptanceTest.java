@@ -115,6 +115,16 @@ public class QuestionAcceptanceTest extends AcceptanceTest {
         assertThat(response.getStatusCode(), is(HttpStatus.FORBIDDEN));
     }
 
+    @Test
+    public void delete_SUCCESS() {
+
+    }
+
+    @Test
+    public void delete_FAIL() {
+
+    }
+
     private ResponseEntity<String> createResponse(TestRestTemplate template, String url) throws Exception {
         HtmlFormDataBuilder builder = HtmlFormDataBuilder.urlEncodedForm();
         HttpEntity<MultiValueMap<String, Object>> request = builder.build();
