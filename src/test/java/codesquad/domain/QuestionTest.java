@@ -33,13 +33,6 @@ public class QuestionTest {
         assertThat(question.getContents(), is("original"));
     }
 
-//    @Test
-//    public void deleteQuestion_success() {
-//        loginUser = QUESTION_WRITER;
-//        question.deleteQuestion(loginUser);
-//        assertThat(question.isDeleted(), is(true));
-//    }
-
     @Test(expected = UnAuthorizedException.class)
     public void deleteQuestion_FAIL_Is_NOT_Owner() {
         question.deleteQuestion(NOT_WRITER);
@@ -56,9 +49,13 @@ public class QuestionTest {
 
     @Test(expected = CannotDeleteException.class)
     public void deleteQuestion_FAIL_IsOwner_AnswersByOthersExist() {
-        Answer answer = new Answer("new answer");
-        answer.writeBy(NOT_WRITER);
-        question.addAnswer(answer);
+        Answer answer1 = new Answer("new answer");
+        answer1.writeBy(NOT_WRITER);
+        question.addAnswer(answer1);
+
+        Answer answer2 = new Answer("new answer");
+        answer2.writeBy(QUESTION_WRITER);
+        question.addAnswer(answer2);
         assertThat(question.hasAnswers(), is(true));
 
         question.deleteQuestion(QUESTION_WRITER);
@@ -67,9 +64,13 @@ public class QuestionTest {
 
     @Test
     public void deleteQuestion_SUCCESS_IsOwner_AllAnswersByQuestionAuthor() {
-        Answer answer = new Answer("new answer");
-        answer.writeBy(QUESTION_WRITER);
-        question.addAnswer(answer);
+        Answer answer1 = new Answer("new answer");
+        answer1.writeBy(QUESTION_WRITER);
+        question.addAnswer(answer1);
+
+        Answer answer2 = new Answer("new answer");
+        answer2.writeBy(QUESTION_WRITER);
+        question.addAnswer(answer2);
         assertThat(question.hasAnswers(), is(true));
 
         question.deleteQuestion(QUESTION_WRITER);
