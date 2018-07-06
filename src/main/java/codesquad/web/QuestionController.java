@@ -22,11 +22,15 @@ import javax.persistence.EntityNotFoundException;
 public class QuestionController {
     private static final Logger logger = LoggerFactory.getLogger(QuestionController.class);
 
-    @Autowired
-    private QuestionRepository questionRepository;
+    private final QuestionRepository questionRepository;
 
-    @Resource
-    private QnaService qnaService;
+    private final QnaService qnaService;
+
+    @Autowired
+    public QuestionController(QuestionRepository questionRepository, QnaService qnaService) {
+        this.questionRepository = questionRepository;
+        this.qnaService = qnaService;
+    }
 
     @GetMapping("/form")
     public String questionForm(@LoginUser User user) {

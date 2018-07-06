@@ -7,6 +7,7 @@ import codesquad.security.LoginUser;
 import codesquad.service.QnaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -22,8 +23,12 @@ import java.net.URI;
 public class ApiAnswerController {
     private static final Logger logger = LoggerFactory.getLogger(ApiAnswerController.class);
 
-    @Resource(name = "qnaService")
-    private QnaService qnaService;
+    private final QnaService qnaService;
+
+    @Autowired
+    public ApiAnswerController(QnaService qnaService) {
+        this.qnaService = qnaService;
+    }
 
     @PostMapping("")
     public ResponseEntity<Answer> add(@LoginUser User loginUser, @PathVariable long questionId, @Valid @RequestBody AnswerDto answerDto) {

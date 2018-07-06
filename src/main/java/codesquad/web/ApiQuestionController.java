@@ -7,6 +7,7 @@ import codesquad.security.LoginUser;
 import codesquad.service.QnaService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,8 +20,12 @@ import java.net.URI;
 public class ApiQuestionController {
     private static final Logger logger = LoggerFactory.getLogger(ApiQuestionController.class);
 
-    @Resource(name = "qnaService")
-    private QnaService qnaService;
+    private final QnaService qnaService;
+
+    @Autowired
+    public ApiQuestionController(QnaService qnaService) {
+        this.qnaService = qnaService;
+    }
 
     @PostMapping("/create")
     public ResponseEntity<QuestionDto> create(@LoginUser User loginUser, @Valid @RequestBody QuestionDto questionDto) {
